@@ -28,9 +28,10 @@ public:
     void print() {
         Node *temp = head;
         while (temp != nullptr) {
-            cout << temp->data << endl;
+            cout << temp->data << " ";
             temp = temp->next;
         }
+        cout << endl;
     }
 
     void insert_at_end(int value) {
@@ -46,33 +47,47 @@ public:
         current->next = temp;
     }
 
-    Node *reverse_linkedlist(Node *prev = nullptr, Node *current=nullptr, Node *forward = nullptr) {
-        while (current != nullptr) {
-            forward = current->next;
-            current->next = prev;
-            prev = current;
-            current = forward;
-        }
-        return prev;
-    }
-
     void reverse_nodes_k_group(int k) {
-        Node temp(0);
-        temp.next = head;
-        Node *group_prev = &temp;
-        Node *group_forward = nullptr;
-        Node *current = nullptr;
-        int count = 1;
-        while (current != nullptr && count <= k) {
-            current = current->next;
-            count++;
+        if (head == nullptr || k <= 1) return;
+
+        // Dummy node to handle head re-assignment smoothly
+        Node dummy(0);
+        dummy.next = head;
+
+        Node *group_prev = &dummy;
+
+        while (true) {
+            // Check if there are at least k nodes left to reverse
+            Node *kth = group_prev;
+            for (int i = 0; i < k && kth != nullptr; i++) {
+                kth = kth->next;
+            }
+
+            // If less than k nodes are left, stop reversing
+            if (kth == nullptr) break;
+
+            // Track the start of the next group
+            Node *group_next = kth->next;
+
+            // Reverse the current k-group
+            Node *prev = group_next;
+            Node *current = group_prev->next;
+
+            while (current != group_next) {
+                Node *forward = current->next;
+                current->next = prev;
+                prev = current;
+                current = forward;
+            }
+
+            // Adjust connections for the outer boundary
+            Node *temp = group_prev->next;
+            group_prev->next = kth;
+            group_prev = temp;
         }
-        if (count < k) {
-            return;
-        }
-        group_forward = current->next;
-        current = group_prev->next;
-        group_prev = reverse_linkedlist(group_prev,current);
+
+        // Reassign the updated head pointer
+        head = dummy.next;
     }
 };
 
@@ -83,9 +98,14 @@ int main() {
     linked_list.insert_at_end(3);
     linked_list.insert_at_end(4);
     linked_list.insert_at_end(5);
-    // linked_list.reverse_linkedlist();
-    linked_list.reverse_nodes_k_group(3);
+
+    // Test case 1: k = 2
+    // Expected Output: 2 1 4 3 5
+    cout << "K = 2: ";
+    linked_list.reverse_nodes_k_group(2);
     linked_list.print();
+
+
 
     return 0;
 }
